@@ -1,3 +1,4 @@
+import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import type { Express, Request, Response } from 'express';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createMcpServer } from '../mcp-server-factory.js';
@@ -23,7 +24,7 @@ function getOrCreateSession(sessionId: string | null, daemonUrl: string): { tran
     sessionIdGenerator: () => id,
   });
   const server = createMcpServer(daemonUrl);
-  server.connect(transport).catch((err) => {
+  server.connect(transport as Transport).catch((err) => {
     console.error('[mcp-http] server.connect error:', err);
     sessions.delete(id);
   });
@@ -42,7 +43,7 @@ export function registerMcpHttpRoutes(app: Express, ctx: RegisterMcpHttpRoutesDe
   app.post('/api/mcp/http', async (req: Request, res: Response) => {
     const sessionIdHeader = req.headers['mcp-session-id'] as string | undefined;
     const host = req.headers.host ?? 'localhost';
-    const protocol = req.socket?.encrypted ? 'https' : 'http';
+    const protocol = (req.socket as any)?.encrypted ? 'https' : 'http';
     const daemonUrl = `${protocol}://${host}`;
 
     const { transport, sessionId, isNew } = getOrCreateSession(sessionIdHeader ?? null, daemonUrl);

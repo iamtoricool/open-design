@@ -16,7 +16,6 @@ function createTestApp(): Express {
   const app = express();
   app.use(express.json());
 
-  // Mock daemon API endpoints
   app.get('/api/skills', (_req: Request, res: Response) => {
     res.json({ skills: [] });
   });
@@ -69,6 +68,23 @@ function startServer(app: Express): Promise<Harness> {
   });
 }
 
+async function parseSseResponse(res: globalThis.Response): Promise<any> {
+  const ct = res.headers.get('content-type') ?? '';
+  if (ct.includes('application/json')) {
+    return res.json();
+  }
+  const text = await res.text();
+  for (const block of text.split('\n\n')) {
+    const dataMatch = block.match(/^data: (.+)$/m);
+    if (dataMatch) {
+      return JSON.parse(dataMatch[1]!);
+    }
+  }
+  throw new Error(`unable to parse SSE response: ${text}`);
+}
+
+const acceptHeader = 'application/json, text/event-stream';
+
 describe('MCP HTTP Transport', () => {
   let harness: Harness;
 
@@ -95,7 +111,7 @@ describe('MCP HTTP Transport', () => {
 
     const initRes = await fetch(harness.mcpHttpUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Accept': acceptHeader },
       body: JSON.stringify(initializeReq),
     });
 
@@ -105,30 +121,20 @@ describe('MCP HTTP Transport', () => {
 
     await fetch(harness.mcpHttpUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'mcp-session-id': sessionId!,
-      },
+      headers: { 'Content-Type': 'application/json', 'Accept': acceptHeader, 'mcp-session-id': sessionId! },
       body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }),
     });
 
-    const toolsReq = {
-      jsonrpc: '2.0',
-      id: '2',
-      method: 'tools/list',
-    };
+    const toolsReq = { jsonrpc: '2.0', id: '2', method: 'tools/list' };
 
     const toolsRes = await fetch(harness.mcpHttpUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'mcp-session-id': sessionId!,
-      },
+      headers: { 'Content-Type': 'application/json', 'Accept': acceptHeader, 'mcp-session-id': sessionId! },
       body: JSON.stringify(toolsReq),
     });
 
     expect(toolsRes.status).toBe(200);
-    const toolsBody = await toolsRes.json();
+    const toolsBody = await parseSseResponse(toolsRes);
     expect(toolsBody.jsonrpc).toBe('2.0');
     expect(toolsBody.result).toBeDefined();
     expect(toolsBody.result.tools).toBeInstanceOf(Array);
@@ -138,7 +144,7 @@ describe('MCP HTTP Transport', () => {
   it('rejects GET requests without a session ID', async () => {
     const res = await fetch(harness.mcpHttpUrl, { method: 'GET' });
     expect(res.status).toBe(400);
-    const body = await res.json();
+    const body = await res.json() as any;
     expect(body.error).toContain('Session ID');
   });
 
@@ -148,7 +154,7 @@ describe('MCP HTTP Transport', () => {
       headers: { 'mcp-session-id': 'nonexistent-session-id' },
     });
     expect(res.status).toBe(404);
-    const body = await res.json();
+    const body = await res.json() as any;
     expect(body.error).toContain('session not found');
   });
 
@@ -166,7 +172,7 @@ describe('MCP HTTP Transport', () => {
 
     const initRes = await fetch(harness.mcpHttpUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Accept': acceptHeader },
       body: JSON.stringify(initializeReq),
     });
     expect(initRes.status).toBe(200);
@@ -175,30 +181,21 @@ describe('MCP HTTP Transport', () => {
 
     await fetch(harness.mcpHttpUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'mcp-session-id': sessionId!,
-      },
+      headers: { 'Content-Type': 'application/json', 'Accept': acceptHeader, 'mcp-session-id': sessionId! },
       body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }),
     });
 
-    const resReq = {
-      jsonrpc: '2.0',
-      id: '2',
-      method: 'resources/list',
-    };
+    const resReq = { jsonrpc: '2.0', id: '2', method: 'resources/list' };
 
     const resRes = await fetch(harness.mcpHttpUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'mcp-session-id': sessionId!,
-      },
+      headers: { 'Content-Type': 'application/json', 'Accept': acceptHeader, 'mcp-session-id': sessionId! },
       body: JSON.stringify(resReq),
     });
 
     expect(resRes.status).toBe(200);
-    const resBody = await resRes.json();
+    const resBody = await parseSseResponse(resRes);
+    expect(resBody.result).toBeDefined();
     expect(resBody.result.resources).toBeInstanceOf(Array);
   });
 });

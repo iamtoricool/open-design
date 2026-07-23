@@ -1482,7 +1482,7 @@ export function createMcpServer(
 
   server.setRequestHandler(
     ReadResourceRequestSchema,
-    wrap(async (req) => {
+    wrap(async (req: { params: { uri: string } }) => {
       const uri = String(req.params?.uri ?? '');
       if (uri === 'od://focus/active') {
         const data = await getJson<ActiveContext>(`${cleanedBase}/api/active`);
@@ -1495,7 +1495,7 @@ export function createMcpServer(
   
       const skillMatch = /^od:\/\/skills\/([^/]+)\/SKILL\.md$/.exec(uri);
       if (skillMatch) {
-        const id = decodeURIComponent(skillMatch[1]);
+        const id = decodeURIComponent(skillMatch[1]!);
         const data = await getJson<ResourcePayload>(`${cleanedBase}/api/skills/${encodeURIComponent(id)}`);
         const text = getResourcePayload(data);
         return { contents: [{ uri, mimeType: 'text/markdown', text }] };
@@ -1503,7 +1503,7 @@ export function createMcpServer(
   
       const dsMatch = /^od:\/\/design-systems\/([^/]+)\/DESIGN\.md$/.exec(uri);
       if (dsMatch) {
-        const id = decodeURIComponent(dsMatch[1]);
+        const id = decodeURIComponent(dsMatch[1]!);
         const data = await getJson<ResourcePayload>(`${cleanedBase}/api/design-systems/${encodeURIComponent(id)}`);
         const text = getResourcePayload(data);
         return { contents: [{ uri, mimeType: 'text/markdown', text }] };
@@ -1515,7 +1515,7 @@ export function createMcpServer(
 
   server.setRequestHandler(
     CallToolRequestSchema,
-    wrap(async (req) => {
+    wrap(async (req: { params: { name: string; arguments?: Record<string, unknown> } }) => {
       const name = req.params?.name;
       const args: McpArgs = (req.params?.arguments ?? {}) as McpArgs;
       return handleMcpToolCall(cleanedBase, name, args);
