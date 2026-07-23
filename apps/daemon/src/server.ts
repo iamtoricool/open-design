@@ -677,6 +677,7 @@ import {
   isLocalSameOrigin,
   isZeroConfigClipperLibraryRequest,
   parseHostHeader,
+  isPrivateIpv4,
 } from './origin-validation.js';
 import { registerLibraryRoutes } from './routes/library.js';
 import {
@@ -2261,7 +2262,10 @@ export async function startServer({
     const allowedOrigins = [...extraAllowedOrigins, ...libraryExtensionAllowedOrigins()];
     if (!isAllowedBrowserOrigin(origin, req.headers.host, ports, host, allowedOrigins)) {
       if (req.method !== 'GET' || !isPortlessLoopbackOrigin(String(origin))) {
-        return res.status(403).json({ error: 'Cross-origin requests are not allowed' });
+        const peerAddr = String(req.socket?.remoteAddress || '').replace(/^::ffff:/, '');
+        if (!isPrivateIpv4(peerAddr)) {
+          return res.status(403).json({ error: 'Cross-origin requests are not allowed' });
+        }
       }
     }
     next();
