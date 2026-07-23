@@ -40,6 +40,8 @@ function getOrCreateSession(sessionId: string | null, daemonUrl: string): { tran
 }
 
 export function registerMcpHttpRoutes(app: Express, ctx: RegisterMcpHttpRoutesDeps): void {
+  console.log('[mcp-http] registerMcpHttpRoutes called');
+  
   app.post('/api/mcp/http', async (req: Request, res: Response) => {
     const sessionIdHeader = req.headers['mcp-session-id'] as string | undefined;
     const host = req.headers.host ?? 'localhost';
