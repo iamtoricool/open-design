@@ -83,7 +83,8 @@ FROM ${RUNTIME_IMAGE}
 RUN apk add --no-cache tini poppler-utils bash git && \
     npm install -g opencode-ai && \
     addgroup -S -g 1001 open-design && \
-    adduser -S -D -H -u 1001 -G open-design open-design
+    adduser -S -D -h /home/open-design -s /sbin/nologin -u 1001 -G open-design open-design && \
+    mkdir -p /home/open-design && chown open-design:open-design /home/open-design
 
 WORKDIR /app
 COPY --from=build --chown=open-design:open-design /app/deploy/daemon ./apps/daemon
