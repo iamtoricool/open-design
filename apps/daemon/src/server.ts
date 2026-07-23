@@ -2943,8 +2943,14 @@ export async function startServer({
     paths: pathDeps,
     mcp: { pendingAuth: mcpPendingAuth, daemonUrlRef },
   });
+  console.log("[debug] about to call registerMcpHttpRoutes");
   registerMcpHttpRoutes(app, {
     http: httpDeps,
+  });
+  // Inline fallback — registers the route directly as well
+  app.post("/api/mcp/http", async (req, res) => {
+    console.log("[inline-mcp-http] POST handler called");
+    res.status(406).json({ error: "Inline fallback — MCP HTTP handler not wired" });
   });
   registerXaiRoutes(app, {
     http: httpDeps,
