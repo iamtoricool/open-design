@@ -2054,9 +2054,8 @@ export async function startServer({
   }
 
   const app = express();
-  // debug: test-ping middleware (pre-guard)
-  app.use("/api/test-ping", (req, res, next) => {
-    if (req.method !== "GET") return next();
+  // debug: test-ping route (pre-guard)
+  app.get("/api/test-ping", (req, res) => {
     res.json({ ok: true, msg: "test ping works (pre-guard)" });
   });
   installRouteRegistrationGuard(app);
