@@ -3193,6 +3193,9 @@ export async function startServer({
     handoff: handoffDeps,
   });
   registerDeploymentCheckRoutes(app, { db, http: httpDeps, deploy: deployDeps });
+  app.get('/api/test-ping', (_req, res) => {
+    res.json({ ok: true, msg: 'test ping works' });
+  });
   app.use('/frames', express.static(FRAMES_DIR));
   registerProjectExportRoutes(app, {
     db,
