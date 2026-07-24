@@ -2054,6 +2054,11 @@ export async function startServer({
   }
 
   const app = express();
+  // debug: test-ping middleware (pre-guard)
+  app.use("/api/test-ping", (req, res, next) => {
+    if (req.method !== "GET") return next();
+    res.json({ ok: true, msg: "test ping works (pre-guard)" });
+  });
   installRouteRegistrationGuard(app);
   // Clipper page captures are self-contained HTML with inlined images plus a
   // Figma IR, which for an image-heavy site (The Economist, news front pages)
@@ -3193,8 +3198,8 @@ export async function startServer({
     handoff: handoffDeps,
   });
   registerDeploymentCheckRoutes(app, { db, http: httpDeps, deploy: deployDeps });
-  app.get('/api/test-ping', (_req, res) => {
-    res.json({ ok: true, msg: 'test ping works' });
+
+
   });
   app.use('/frames', express.static(FRAMES_DIR));
   registerProjectExportRoutes(app, {
