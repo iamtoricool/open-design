@@ -136,6 +136,9 @@ export async function startDaemonRuntime(options: DaemonRuntimeOptions = {}): Pr
 
   if (logListening) {
     console.log(`[od] listening on ${started.url}`);
+    const inventory = (started as any).routeInventory ?? [];
+    const mcpHttp = inventory.filter((r: any) => r.path.includes('/api/mcp/http'));
+    console.log(`[od] route inventory: ${inventory.length} routes, mcp-http: ${JSON.stringify(mcpHttp)}`);
   }
   if (shouldOpenBrowser) {
     const { openBrowser } = await import('./browser/index.js');

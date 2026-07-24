@@ -41,6 +41,8 @@ function getOrCreateSession(sessionId: string | null, daemonUrl: string): { tran
 
 export function registerMcpHttpRoutes(app: Express, ctx: RegisterMcpHttpRoutesDeps): void {
   console.log('[mcp-http] registerMcpHttpRoutes called');
+  console.error('[mcp-http] stderr: registerMcpHttpRoutes called');
+  process.stderr.write('[mcp-http] process.stderr: registerMcpHttpRoutes called\n');
   
   app.post('/api/mcp/http', async (req: Request, res: Response) => {
     const sessionIdHeader = req.headers['mcp-session-id'] as string | undefined;
