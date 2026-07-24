@@ -2058,7 +2058,7 @@ export async function startServer({
   app.get("/api/test-ping", (req, res) => {
     res.json({ ok: true, msg: "test ping works (pre-guard)" });
   });
-  installRouteRegistrationGuard(app);
+
   // Clipper page captures are self-contained HTML with inlined images plus a
   // Figma IR, which for an image-heavy site (The Economist, news front pages)
   // runs to tens of MB — far past a normal JSON body. Give the ingest route a

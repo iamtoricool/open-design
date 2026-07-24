@@ -29,6 +29,10 @@ export function registerDaemonRoutes(app: Express, deps: RegisterDaemonRoutesDep
   const { db, env, host, http, paths, sandboxRuntime } = deps;
   const { requireLocalDaemonRequest, sendApiError } = http;
 
+  app.get('/api/test-ping', async (_req, res) => {
+    res.json({ ok: true, msg: 'test ping works (post-guard)' });
+  });
+
   app.get('/api/daemon/status', async (_req, res) => {
     const versionInfo = await readCurrentAppVersionInfo();
     res.json({
