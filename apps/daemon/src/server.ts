@@ -3200,7 +3200,7 @@ export async function startServer({
   registerDeploymentCheckRoutes(app, { db, http: httpDeps, deploy: deployDeps });
 
 
-  });
+
   app.use('/frames', express.static(FRAMES_DIR));
   registerProjectExportRoutes(app, {
     db,
