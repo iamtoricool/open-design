@@ -556,6 +556,8 @@ if (argv[0] === 'tools' && argv[1] === 'live-artifacts') {
       process.exitCode = 1;
     });
 } else {
+  console.log('[cli-entry] calling runDaemonCliStartup');
+  console.error('[cli-entry-stderr] calling runDaemonCliStartup');
   await runDaemonCliStartup(argv, { printHelp: printRootHelp });
 }
 
