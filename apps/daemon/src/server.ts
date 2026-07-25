@@ -2054,8 +2054,8 @@ export async function startServer({
   }
 
   const app = express();
-  // debug: test-ping route (pre-guard)
-  app.get("/api/test-ping", (req, res) => {
+  // pre-guard test-ping via router.route().get() to bypass app.get entirely
+  app.router.route("/api/test-ping").get((req, res) => {
     res.json({ ok: true, msg: "test ping works (pre-guard)" });
   });
 
