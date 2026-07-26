@@ -8952,6 +8952,16 @@ export async function startServer({
         if (!returnServer) {
           console.log(`[od] daemon listening on ${url}`);
         }
+        // [debug] dump router stack — look for test-ping and mcp/http layers
+        const dbgStack: string[] = [];
+        for (const layer of (app as any).router.stack) {
+          if (layer.route) {
+            dbgStack.push(`ROUTE path=${JSON.stringify(layer.route.path)} methods=${JSON.stringify(Object.keys(layer.route.methods))} stack=${layer.route.stack.length}`);
+          } else {
+            dbgStack.push(`MW path=${JSON.stringify(layer.path)} name=${layer.name ?? '(unnamed)'}`);
+          }
+        }
+        console.log(`[od] router stack (${dbgStack.length} layers):\n${dbgStack.join('\n  ')}`);
         daemonUrl = url;
         resolve(returnServer ? {
           url,
